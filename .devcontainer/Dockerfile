@@ -4,6 +4,12 @@
 ARG VARIANT="5.0"
 FROM mcr.microsoft.com/vscode/devcontainers/dotnetcore:0-${VARIANT}
 
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg \
+    && mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg \
+    && sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list' \
+    && apt-get update \
+    && apt-get install azure-functions-core-tools-3
+    
 # [Option] Install Node.js
 ARG INSTALL_NODE="true"
 ARG NODE_VERSION="lts/*"
@@ -14,13 +20,6 @@ ARG INSTALL_AZURE_CLI="false"
 COPY library-scripts/azcli-debian.sh /tmp/library-scripts/
 RUN if [ "$INSTALL_AZURE_CLI" = "true" ]; then bash /tmp/library-scripts/azcli-debian.sh; fi \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/library-scripts
-
-COPY *.zip .
-
-RUN unzip Azure.Functions.Cli.linux-x64.3.0.3320.zip -d /usr/local/bin \
-    && chmod 755 /usr/local/bin/func \
-    && rm Azure.Functions.Cli.linux-x64.3.0.3320.zip
-
 
 
 
